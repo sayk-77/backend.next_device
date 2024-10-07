@@ -1,7 +1,9 @@
 package models
 
-type Categories struct {
-	Id               int    `json:"id" gorm:"unique;primary_key;AUTO_INCREMENT"`
-	Name             string `json:"name"`
-	ParentCategoryId int    `json:"parentCategoryId"`
+type Category struct {
+	ID               uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name             string `gorm:"not null" json:"name"`
+	ParentCategoryID *uint  `json:"parentCategoryId"`
+
+	SubCategories []Category `gorm:"foreignKey:ParentCategoryID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"subCategories"`
 }

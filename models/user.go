@@ -1,15 +1,21 @@
 package models
 
 import (
-	"gorm.io/gorm"
-	"next_device/backend/types"
+	"time"
 )
 
 type User struct {
-	gorm.Model
-	Email        string               `json:"email"`
-	PasswordHash string               `json:"passwordHash"`
-	FirstName    string               `json:"firstName"`
-	LastName     string               `json:"lastName"`
-	Role         types.RoleCustomType `json:"role"`
+	ID           uint      `gorm:"primaryKey;autoIncrement" json:"id"`
+	Email        string    `gorm:"uniqueIndex;not null" json:"email"`
+	PasswordHash string    `gorm:"not null" json:"passwordHash"`
+	FirstName    string    `gorm:"not null" json:"firstName"`
+	LastName     string    `gorm:"not null" json:"lastName"`
+	Role         string    `gorm:"type:enum('customer', 'admin', 'moderator');default:'customer';not null" json:"role"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+
+	Addresses []Address `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"addresses"`
+	Orders    []Order   `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"orders"`
+	Reviews   []Review  `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"reviews"`
+	CartItems []Cart    `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"cartItems"`
 }

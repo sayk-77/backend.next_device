@@ -1,13 +1,16 @@
 package models
 
-import (
-	"gorm.io/gorm"
-	"next_device/backend/types"
-)
+import "time"
 
-type Orders struct {
-	gorm.Model
-	UserId     int              `json:"userId"`
-	TotalPrice float64          `json:"totalPrice"`
-	Status     types.StatusType `json:"status"`
+type Order struct {
+	ID         uint      `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID     uint      `json:"userId"`
+	TotalPrice float64   `gorm:"type:decimal(10,2);not null" json:"totalPrice"`
+	Status     string    `gorm:"type:enum('pending', 'paid', 'shipped', 'delivered', 'canceled', 'returned');default:'pending';not null" json:"status"`
+	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
+
+	User       User        `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
+	OrderItems []OrderItem `gorm:"foreignKey:OrderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"orderItems"`
+	Payment    Payment     `gorm:"foreignKey:OrderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"payment"`
 }

@@ -1,8 +1,10 @@
 package models
 
-type ProductVariants struct {
-	Id           int    `json:"id" gorm:"unique;primary_key;AUTO_INCREMENT"`
-	ProductId    int    `json:"productId"`
-	VariantName  string `json:"variantName"`
-	VariantValue string `json:"variantValue"`
+type ProductVariant struct {
+	ID           uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	ProductID    uint   `json:"productId"`
+	VariantName  string `gorm:"not null" json:"variantName"`
+	VariantValue string `gorm:"not null" json:"variantValue"`
+
+	Product Products `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 }

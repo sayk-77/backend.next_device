@@ -1,6 +1,6 @@
 package models
 
-type Brands struct {
-	Id   int    `json:"id" gorm:"unique;primary_key;AUTO_INCREMENT"`
-	Name string `json:"name"`
+type Brand struct {
+	ID   uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name string `gorm:"not null" json:"name"`
 }

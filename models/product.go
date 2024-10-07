@@ -1,15 +1,23 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
-type Product struct {
-	gorm.Model
-	Art           string  `json:"art"`
-	Name          string  `json:"name"`
-	Description   string  `json:"description"`
-	Price         float64 `json:"price"`
-	DiscountPrice float64 `json:"discountPrice"`
-	Stock         int     `json:"stock"`
-	CategoryId    int     `json:"categoryId"`
-	BrandId       int     `json:"brandId"`
+type Products struct {
+	ID            uint      `gorm:"primaryKey;autoIncrement" json:"id"`
+	SKU           string    `gorm:"uniqueIndex;not null" json:"sku"`
+	Name          string    `gorm:"not null" json:"name"`
+	Description   string    `gorm:"type:text" json:"description"`
+	Price         float64   `gorm:"type:decimal(10,2);not null" json:"price"`
+	DiscountPrice *float64  `gorm:"type:decimal(10,2)" json:"discountPrice"`
+	Stock         int       `gorm:"not null" json:"stock"`
+	CategoryID    uint      `json:"categoryId"`
+	BrandID       uint      `json:"brandId"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
+
+	Category Category         `gorm:"foreignKey:CategoryID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"category"`
+	Brand    Brand            `gorm:"foreignKey:BrandID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"brand"`
+	Variants []ProductVariant `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"variants"`
+	Images   []ProductImage   `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"images"`
+	Reviews  []Review         `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"reviews"`
 }
