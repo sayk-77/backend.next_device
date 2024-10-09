@@ -6,7 +6,7 @@ type Order struct {
 	ID         uint      `gorm:"primaryKey;autoIncrement" json:"id"`
 	UserID     uint      `json:"userId"`
 	TotalPrice float64   `gorm:"type:decimal(10,2);not null" json:"totalPrice"`
-	Status     string    `gorm:"type:enum('pending', 'paid', 'shipped', 'delivered', 'canceled', 'returned');default:'pending';not null" json:"status"`
+	Status     string    `gorm:"type:order_status;default:'pending';not null" json:"status"`
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
 
