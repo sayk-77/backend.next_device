@@ -8,12 +8,12 @@ type Products struct {
 	Name          string    `gorm:"not null" json:"name"`
 	Description   string    `gorm:"type:text" json:"description"`
 	Price         float64   `gorm:"type:decimal(10,2);not null" json:"price"`
-	DiscountPrice *float64  `gorm:"type:decimal(10,2)" json:"discountPrice"`
+	DiscountPrice float64   `gorm:"type:decimal(10,2);default=0'" json:"discountPrice"`
 	Stock         int       `gorm:"not null" json:"stock"`
 	CategoryID    uint      `json:"categoryId"`
 	BrandID       uint      `json:"brandId"`
-	CreatedAt     time.Time `json:"createdAt"`
-	UpdatedAt     time.Time `json:"updatedAt"`
+	CreatedAt     time.Time `json:"createdAt" gorm:"autoCreateTime"`
+	UpdatedAt     time.Time `json:"updatedAt" gorm:"autoUpdateTime"`
 
 	Category Category         `gorm:"foreignKey:CategoryID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"category"`
 	Brand    Brand            `gorm:"foreignKey:BrandID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"brand"`
