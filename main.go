@@ -3,13 +3,19 @@ package main
 import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"next_device/backend/db"
 	"next_device/backend/di"
-	"next_device/backend/routes"
+	"next_device/backend/tools"
 )
 
 func main() {
 	app := fiber.New()
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "GET,POST,HEAD,PUT,DELETE",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 
 	dataBase, err := db.SetupDb()
 	if err != nil {
@@ -18,8 +24,9 @@ func main() {
 
 	db.Migrate(dataBase)
 
-	productController := di.InitDependencies(dataBase)
-	routes.SetupRoutes(app, productController)
+	di.InitDependencies(app, dataBase)
+	tools.GetImageProduct(app)
+	tools.GetImageBrand(app)
 
 	server := app.Listen("127.0.0.1:5000")
 	if server != nil {

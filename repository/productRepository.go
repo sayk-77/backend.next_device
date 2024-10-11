@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"next_device/backend/models"
 )
@@ -61,7 +60,6 @@ func (pr *ProductRepository) DeleteProduct(id uint) error {
 
 func (pr *ProductRepository) GetProductsByCategoryPaged(category string, limit, offset int) ([]*models.Products, error) {
 	var products []*models.Products
-	fmt.Print(category)
 
 	if result := pr.db.
 		Table("products").
