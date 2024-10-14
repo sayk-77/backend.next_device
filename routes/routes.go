@@ -21,4 +21,5 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	api.Post("/brands", brandController.CreateBrand)
 	api.Put("/brands/:id", brandController.UpdateBrand)
 	api.Delete("/brands/:id", brandController.DeleteBrand)
+	api.Get("/brands/:id/category", brandController.GetCategoriesByBrand)
 }

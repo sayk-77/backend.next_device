@@ -27,8 +27,9 @@ func main() {
 	di.InitDependencies(app, dataBase)
 	tools.GetImageProduct(app)
 	tools.GetImageBrand(app)
+	tools.GetImageBanner(app)
 
-	server := app.Listen("127.0.0.1:5000")
+	server := app.Listen("192.168.0.105:5000")
 	if server != nil {
 		panic("Ошибка при запуске сервера")
 	}

@@ -36,7 +36,21 @@ func (bc *BrandController) CreateBrand(c *fiber.Ctx) error {
 }
 
 func (bc *BrandController) GetAllBrand(c *fiber.Ctx) error {
-	products, err := bc.brandService.GetAllBrand()
+
+	limitQuery := c.Query("limit")
+	var limit *int
+
+	if limitQuery != "" {
+		parsedLimit, err := strconv.Atoi(limitQuery)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid limit parameter",
+			})
+		}
+		limit = &parsedLimit
+	}
+
+	products, err := bc.brandService.GetAllBrand(limit)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to retrieve products brand",
@@ -106,5 +120,23 @@ func (bc *BrandController) DeleteBrand(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Brand deleted successfully",
+	})
+}
+
+func (bc *BrandController) GetCategoriesByBrand(c *fiber.Ctx) error {
+	brandID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid brand ID",
+		})
+	}
+
+	categories, err := bc.brandService.GetCategoriesByBrand(uint(brandID))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to retrieve categories"})
+	}
+
+	return c.JSON(fiber.Map{
+		"categories": categories,
 	})
 }

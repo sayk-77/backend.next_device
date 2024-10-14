@@ -82,8 +82,9 @@ func (pr *ProductRepository) GetDiscountedProductsPaged(limit, offset int) ([]*m
 	var products []*models.Products
 
 	if result := pr.db.
-		Select("id", "name", "description", "price").
+		Select("id", "name", "description", "price", "discount_price").
 		Where("discount_price > ?", 0).
+		Order("discount_price DESC").
 		Limit(limit).
 		Offset(offset).
 		Find(&products); result.Error != nil {
