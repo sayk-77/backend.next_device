@@ -66,11 +66,11 @@ func (br *BrandRepository) DeleteBrand(id uint) error {
 	return nil
 }
 
-func (br *BrandRepository) GetProductCountByCategory(categoryID uint) (int64, error) {
+func (br *BrandRepository) GetProductCountByCategoryAndBrand(categoryID, brandID uint) (int64, error) {
 	var count int64
 
 	if err := br.db.Model(&models.Products{}).
-		Where("category_id = ?", categoryID).
+		Where("category_id = ? AND brand_id = ?", categoryID, brandID).
 		Count(&count).Error; err != nil {
 		return 0, err
 	}

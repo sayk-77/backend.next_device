@@ -46,7 +46,7 @@ func (bs *BrandService) GetCategoriesByBrand(brandID uint) ([]models.CategoryWit
 	var categoriesWithCount []models.CategoryWithCountAndImage
 
 	for _, category := range categories {
-		count, err := bs.brandRepo.GetProductCountByCategory(category.ID)
+		count, err := bs.brandRepo.GetProductCountByCategoryAndBrand(category.ID, brandID)
 		if err != nil {
 			return nil, err
 		}

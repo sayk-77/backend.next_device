@@ -34,6 +34,14 @@ func (ps *ProductService) GetProductByID(id uint) (*models.Products, error) {
 	return product, nil
 }
 
+func (ps *ProductService) GetProductByName(name string) (*models.Products, error) {
+	product, err := ps.productRepo.GetProductByName(name)
+	if err != nil {
+		return nil, err
+	}
+	return product, nil
+}
+
 func (ps *ProductService) UpdateProduct(product *models.Products) error {
 	return ps.productRepo.UpdateProduct(product)
 }
@@ -58,6 +66,7 @@ func (ps *ProductService) GetProductsByCategory(category string, limit, offset i
 			Id:          product.ID,
 			Name:        product.Name,
 			Description: product.Description,
+			SearchName:  product.SearchName,
 			Image:       mainImage.ImageURL,
 			Price:       product.Price,
 		})
@@ -82,6 +91,7 @@ func (ps *ProductService) GetDiscountedProducts(limit, offset int) ([]*models.Pr
 			Id:          product.ID,
 			Name:        product.Name,
 			Description: product.Description,
+			SearchName:  product.SearchName,
 			Image:       mainImage.ImageURL,
 			Price:       product.Price,
 		})
@@ -106,10 +116,35 @@ func (ps *ProductService) GetNewProducts(limit, offset int) ([]*models.ProductWi
 			Id:          product.ID,
 			Name:        product.Name,
 			Description: product.Description,
+			SearchName:  product.SearchName,
 			Image:       mainImage.ImageURL,
 			Price:       product.Price,
 		})
 	}
 
+	return productsWithImages, nil
+}
+
+func (ps *ProductService) GetProductsByBrandAndCategory(brandId int, categoryName string, limit, offset int) ([]*models.ProductWithMainImage, error) {
+	product, err := ps.productRepo.GetProductsByBrandAndCategory(uint(brandId), categoryName, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	var productsWithImages []*models.ProductWithMainImage
+	for _, product := range product {
+		mainImage, err := ps.imageService.GetMainImage(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		productsWithImages = append(productsWithImages, &models.ProductWithMainImage{
+			Id:          product.ID,
+			Name:        product.Name,
+			Description: product.Description,
+			SearchName:  product.SearchName,
+			Image:       mainImage.ImageURL,
+			Price:       product.Price,
+		})
+	}
 	return productsWithImages, nil
 }

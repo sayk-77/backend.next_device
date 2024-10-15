@@ -5,11 +5,13 @@ import (
 	"next_device/backend/controllers"
 )
 
-func SetupRoutes(app *fiber.App, productController *controllers.ProductController, brandController *controllers.BrandController) {
+func SetupRoutes(app *fiber.App, productController *controllers.ProductController,
+	brandController *controllers.BrandController, categoryController *controllers.CategoryController) {
 	api := app.Group("/api")
 
 	api.Get("/products", productController.GetAllProducts)
-	api.Get("/products/:id", productController.GetProductByID)
+	api.Get("/products/category", productController.GetProductsByBrandAndCategory)
+	api.Get("/products/:param", productController.GetProductByIdOrName)
 	api.Get("/catalog/discounts", productController.GetDiscountedProducts)
 	api.Get("/catalog/new", productController.GetNewProducts)
 	api.Get("/catalog/:category", productController.GetProductsByCategory)
@@ -22,4 +24,10 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	api.Put("/brands/:id", brandController.UpdateBrand)
 	api.Delete("/brands/:id", brandController.DeleteBrand)
 	api.Get("/brands/:id/category", brandController.GetCategoriesByBrand)
+	api.Get("/categories", categoryController.GetAllCategories)
+	api.Get("/categories/count", categoryController.GetAllCategoryAndCount)
+	api.Get("/categories/:param", categoryController.GetCategoryByIdOrName)
+	api.Post("/categories", categoryController.CreateCategory)
+	api.Put("/categories/:id", categoryController.UpdateCategory)
+	api.Delete("/categories/:id", categoryController.DeleteCategory)
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"next_device/backend/models"
 	"next_device/backend/service"
 	"strconv"
@@ -47,15 +48,21 @@ func (pc *ProductController) GetAllProducts(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(products)
 }
 
-func (pc *ProductController) GetProductByID(c *fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid product ID",
-		})
+func (pc *ProductController) GetProductByIdOrName(c *fiber.Ctx) error {
+	param := c.Params("param")
+
+	id, err := strconv.Atoi(param)
+	if err == nil {
+		product, err := pc.productService.GetProductByID(uint(id))
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "Product not found",
+			})
+		}
+		return c.Status(fiber.StatusOK).JSON(product)
 	}
 
-	product, err := pc.productService.GetProductByID(uint(id))
+	product, err := pc.productService.GetProductByName(param)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "Product not found",
@@ -152,6 +159,33 @@ func (pc *ProductController) GetNewProducts(c *fiber.Ctx) error {
 	}
 
 	products, err := pc.productService.GetNewProducts(limit, offset)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(products)
+}
+
+func (pc *ProductController) GetProductsByBrandAndCategory(c *fiber.Ctx) error {
+	limit, err := strconv.Atoi(c.Query("limit", "30"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid limit parameter"})
+	}
+	offset, err := strconv.Atoi(c.Query("offset", "0"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid offset parameter"})
+	}
+	brandId, err := strconv.Atoi(c.Query("brand_id"))
+	fmt.Print(brandId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid brand ID",
+		})
+	}
+	categoryName := c.Query("category")
+	fmt.Print(categoryName)
+
+	products, err := pc.productService.GetProductsByBrandAndCategory(brandId, categoryName, limit, offset)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
