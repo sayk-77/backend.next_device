@@ -72,24 +72,33 @@ func (pr *ProductRepository) DeleteProduct(id uint) error {
 	return nil
 }
 
-func (pr *ProductRepository) GetProductsByCategoryPaged(category string, limit, offset int) ([]*models.Products, error) {
-	var products []*models.Products
+func (pr *ProductRepository) GetProductsByCategoryPaged(category string, limit, offset int) ([]models.Products, string, error) {
+	var products []models.Products
+	var categoryTitle string
 
 	if result := pr.db.
 		Table("products").
-		Select("products.id", "products.name", "products.description", "products.price", "products.search_name").
+		Select("products.*, categories.title AS category_title").
 		Joins("JOIN categories ON products.category_id = categories.id").
 		Where("categories.name = ?", category).
 		Limit(limit).
 		Offset(offset).
-		Find(&products); result.Error != nil {
+		Scan(&products); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return products, nil
+			return products, "", nil
 		}
-		return nil, result.Error
+		return nil, "", result.Error
 	}
 
-	return products, nil
+	if err := pr.db.
+		Table("categories").
+		Select("title").
+		Where("name = ?", category).
+		Scan(&categoryTitle).Error; err != nil {
+		return nil, "", err
+	}
+
+	return products, categoryTitle, nil
 }
 
 func (pr *ProductRepository) GetDiscountedProductsPaged(limit, offset int) ([]*models.Products, error) {

@@ -51,7 +51,7 @@ func (ps *ProductService) DeleteProduct(id uint) error {
 }
 
 func (ps *ProductService) GetProductsByCategory(category string, limit, offset int) ([]*models.ProductWithMainImage, error) {
-	products, err := ps.productRepo.GetProductsByCategoryPaged(category, limit, offset)
+	products, title, err := ps.productRepo.GetProductsByCategoryPaged(category, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -63,12 +63,13 @@ func (ps *ProductService) GetProductsByCategory(category string, limit, offset i
 			return nil, err
 		}
 		productsWithImages = append(productsWithImages, &models.ProductWithMainImage{
-			Id:          product.ID,
-			Name:        product.Name,
-			Description: product.Description,
-			SearchName:  product.SearchName,
-			Image:       mainImage.ImageURL,
-			Price:       product.Price,
+			Id:            product.ID,
+			Name:          product.Name,
+			Description:   product.Description,
+			SearchName:    product.SearchName,
+			CategoryTitle: title,
+			Image:         mainImage.ImageURL,
+			Price:         product.Price,
 		})
 	}
 
