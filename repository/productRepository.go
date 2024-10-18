@@ -101,16 +101,21 @@ func (pr *ProductRepository) GetProductsByCategoryPaged(category string, limit, 
 	return products, categoryTitle, nil
 }
 
-func (pr *ProductRepository) GetDiscountedProductsPaged(limit, offset int) ([]*models.Products, error) {
+func (pr *ProductRepository) GetDiscountedProductsPaged(limit, offset int, brand string) ([]*models.Products, error) {
 	var products []*models.Products
 
-	if result := pr.db.
-		Select("id", "name", "description", "price", "discount_price", "search_name").
-		Where("discount_price > ?", 0).
-		Order("discount_price DESC").
+	query := pr.db.Select("products.id, products.name, products.description, products.price, products.discount_price, products.search_name").
+		Joins("JOIN brands ON brands.id = products.brand_id").
+		Where("products.discount_price > ?", 0).
+		Order("products.discount_price DESC").
 		Limit(limit).
-		Offset(offset).
-		Find(&products); result.Error != nil {
+		Offset(offset)
+
+	if brand != "" {
+		query = query.Where("brands.name ILIKE ?", "%"+brand+"%")
+	}
+
+	if result := query.Find(&products); result.Error != nil {
 		return nil, result.Error
 	}
 
@@ -143,5 +148,20 @@ func (pr *ProductRepository) GetProductsByBrandAndCategory(brandId uint, categor
 		return nil, result.Error
 	}
 
+	return products, nil
+}
+
+func (pr *ProductRepository) SearchProduct(query string, limit, offset int) ([]*models.Products, error) {
+	var products []*models.Products
+
+	if result := pr.db.
+		Where("(name ILIKE ? OR SIMILARITY(name, ?) > 0.5)", "%"+query+"%", query).
+		Limit(limit).Offset(offset).
+		Find(&products); result.Error != nil {
+		return nil, result.Error
+	}
+	if len(products) == 0 {
+		return nil, nil
+	}
 	return products, nil
 }

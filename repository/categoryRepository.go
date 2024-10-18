@@ -78,3 +78,14 @@ func (cr *CategoryRepository) GetProductCountByCategory() (map[uint]int64, error
 	}
 	return result, nil
 }
+
+func (cr *CategoryRepository) SearchCategory(query string) ([]*models.Category, error) {
+	var categories []*models.Category
+
+	if err := cr.db.
+		Where("(title ILIKE ? OR SIMILARITY(title, ?) > 0.5)", "%"+query+"%", query).
+		Find(&categories).Error; err != nil {
+		return nil, err
+	}
+	return categories, nil
+}

@@ -11,6 +11,7 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 
 	api.Get("/products", productController.GetAllProducts)
 	api.Get("/products/category", productController.GetProductsByBrandAndCategory)
+	api.Get("/search", productController.SearchProduct)
 	api.Get("/products/:param", productController.GetProductByIdOrName)
 	api.Get("/catalog/discounts", productController.GetDiscountedProducts)
 	api.Get("/catalog/new", productController.GetNewProducts)

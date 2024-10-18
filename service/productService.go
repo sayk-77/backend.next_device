@@ -8,10 +8,18 @@ import (
 type ProductService struct {
 	productRepo  *repository.ProductRepository
 	imageService *ProductImageService
+	brandRepo    *repository.BrandRepository
+	categoryRepo *repository.CategoryRepository
 }
 
-func NewProductService(productRepo *repository.ProductRepository, imageService *ProductImageService) *ProductService {
-	return &ProductService{productRepo: productRepo, imageService: imageService}
+type SearchResults struct {
+	Products   []*models.ProductWithMainImage `json:"products"`
+	Brands     []*models.Brand                `json:"brands"`
+	Categories []*models.Category             `json:"categories"`
+}
+
+func NewProductService(productRepo *repository.ProductRepository, imageService *ProductImageService, brandRepo *repository.BrandRepository, categoryRepo *repository.CategoryRepository) *ProductService {
+	return &ProductService{productRepo: productRepo, imageService: imageService, brandRepo: brandRepo, categoryRepo: categoryRepo}
 }
 
 func (ps *ProductService) CreateProduct(product *models.Products) error {
@@ -68,6 +76,7 @@ func (ps *ProductService) GetProductsByCategory(category string, limit, offset i
 			Description:   product.Description,
 			SearchName:    product.SearchName,
 			CategoryTitle: title,
+			DiscountPrice: product.DiscountPrice,
 			Image:         mainImage.ImageURL,
 			Price:         product.Price,
 		})
@@ -76,8 +85,8 @@ func (ps *ProductService) GetProductsByCategory(category string, limit, offset i
 	return productsWithImages, nil
 }
 
-func (ps *ProductService) GetDiscountedProducts(limit, offset int) ([]*models.ProductWithMainImage, error) {
-	products, err := ps.productRepo.GetDiscountedProductsPaged(limit, offset)
+func (ps *ProductService) GetDiscountedProducts(limit, offset int, brand string) ([]*models.ProductWithMainImage, error) {
+	products, err := ps.productRepo.GetDiscountedProductsPaged(limit, offset, brand)
 	if err != nil {
 		return nil, err
 	}
@@ -89,12 +98,13 @@ func (ps *ProductService) GetDiscountedProducts(limit, offset int) ([]*models.Pr
 			return nil, err
 		}
 		productsWithImages = append(productsWithImages, &models.ProductWithMainImage{
-			Id:          product.ID,
-			Name:        product.Name,
-			Description: product.Description,
-			SearchName:  product.SearchName,
-			Image:       mainImage.ImageURL,
-			Price:       product.Price,
+			Id:            product.ID,
+			Name:          product.Name,
+			Description:   product.Description,
+			SearchName:    product.SearchName,
+			DiscountPrice: product.DiscountPrice,
+			Image:         mainImage.ImageURL,
+			Price:         product.Price,
 		})
 	}
 
@@ -114,12 +124,13 @@ func (ps *ProductService) GetNewProducts(limit, offset int) ([]*models.ProductWi
 			return nil, err
 		}
 		productsWithImages = append(productsWithImages, &models.ProductWithMainImage{
-			Id:          product.ID,
-			Name:        product.Name,
-			Description: product.Description,
-			SearchName:  product.SearchName,
-			Image:       mainImage.ImageURL,
-			Price:       product.Price,
+			Id:            product.ID,
+			Name:          product.Name,
+			Description:   product.Description,
+			SearchName:    product.SearchName,
+			DiscountPrice: product.DiscountPrice,
+			Image:         mainImage.ImageURL,
+			Price:         product.Price,
 		})
 	}
 
@@ -139,13 +150,53 @@ func (ps *ProductService) GetProductsByBrandAndCategory(brandId int, categoryNam
 			return nil, err
 		}
 		productsWithImages = append(productsWithImages, &models.ProductWithMainImage{
-			Id:          product.ID,
-			Name:        product.Name,
-			Description: product.Description,
-			SearchName:  product.SearchName,
-			Image:       mainImage.ImageURL,
-			Price:       product.Price,
+			Id:            product.ID,
+			Name:          product.Name,
+			Description:   product.Description,
+			SearchName:    product.SearchName,
+			DiscountPrice: product.DiscountPrice,
+			Image:         mainImage.ImageURL,
+			Price:         product.Price,
 		})
 	}
 	return productsWithImages, nil
+}
+
+func (ps *ProductService) SearchAll(query string, limit, offset int) (*SearchResults, error) {
+	results := SearchResults{}
+
+	products, err := ps.productRepo.SearchProduct(query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, product := range products {
+		mainImage, err := ps.imageService.GetMainImage(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		results.Products = append(results.Products, &models.ProductWithMainImage{
+			Id:            product.ID,
+			Name:          product.Name,
+			Description:   product.Description,
+			SearchName:    product.SearchName,
+			DiscountPrice: product.DiscountPrice,
+			Image:         mainImage.ImageURL,
+			Price:         product.Price,
+		})
+	}
+
+	brands, err := ps.brandRepo.SearchBrand(query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	results.Brands = brands
+
+	categories, err := ps.categoryRepo.SearchCategory(query)
+	if err != nil {
+		return nil, err
+	}
+	results.Categories = categories
+
+	return &results, nil
 }

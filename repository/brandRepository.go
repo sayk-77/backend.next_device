@@ -106,3 +106,16 @@ func (br *BrandRepository) GetMainImage(categoryID uint, brandID uint) (string, 
 
 	return mainImage, nil
 }
+
+func (br *BrandRepository) SearchBrand(query string, limit, offset int) ([]*models.Brand, error) {
+	var brands []*models.Brand
+
+	if err := br.db.
+		Where("(name ILIKE ? OR SIMILARITY(name, ?) > 0.5)", "%"+query+"%", query).
+		Limit(limit).
+		Offset(offset).
+		Find(&brands).Error; err != nil {
+		return nil, err
+	}
+	return brands, nil
+}

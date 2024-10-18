@@ -140,7 +140,9 @@ func (pc *ProductController) GetDiscountedProducts(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid offset parameter"})
 	}
 
-	products, err := pc.productService.GetDiscountedProducts(limit, offset)
+	brand := c.Query("brand")
+
+	products, err := pc.productService.GetDiscountedProducts(limit, offset, brand)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -191,4 +193,26 @@ func (pc *ProductController) GetProductsByBrandAndCategory(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(products)
+}
+
+func (pc *ProductController) SearchProduct(c *fiber.Ctx) error {
+	limit, err := strconv.Atoi(c.Query("limit", "30"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid limit parameter"})
+	}
+	offset, err := strconv.Atoi(c.Query("offset", "0"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid offset parameter"})
+	}
+
+	query := c.Query("query")
+	if query == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid query parameter"})
+	}
+
+	result, err := pc.productService.SearchAll(query, limit, offset)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to search product"})
+	}
+	return c.JSON(result)
 }
