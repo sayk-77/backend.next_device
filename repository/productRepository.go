@@ -38,6 +38,7 @@ func (pr *ProductRepository) GetProductById(id uint) (*models.Products, error) {
 		Preload("Variants").
 		Preload("Brand").
 		Preload("Category").
+		Preload("Details").
 		First(&product, id); result.Error != nil {
 		return nil, result.Error
 	}
@@ -51,6 +52,7 @@ func (pr *ProductRepository) GetProductByName(name string) (*models.Products, er
 		Preload("Variants").
 		Preload("Brand").
 		Preload("Category").
+		Preload("Details").
 		Where("search_name = ?", name).
 		First(&product); result.Error != nil {
 		return nil, result.Error

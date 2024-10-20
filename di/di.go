@@ -25,5 +25,9 @@ func InitDependencies(app *fiber.App, db *gorm.DB) {
 	productService := service.NewProductService(productRep, productImageService, brandRep, categoryRep)
 	productController := controllers.NewProductController(productService)
 
-	routes.SetupRoutes(app, productController, brandController, categoryController)
+	productDetailsRep := repository.NewProductDetailsRepository(db)
+	productDetailsService := service.NewProductDetailsService(productDetailsRep)
+	productDetailsController := controllers.NewProductDetailsController(productDetailsService)
+
+	routes.SetupRoutes(app, productController, brandController, categoryController, productDetailsController)
 }
