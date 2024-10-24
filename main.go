@@ -30,7 +30,7 @@ func main() {
 	tools.GetImageBanner(app)
 	tools.GetImageCategory(app)
 
-	server := app.Listen("192.168.0.105:5000")
+	server := app.Listen("localhost:5000")
 	if server != nil {
 		panic("Ошибка при запуске сервера")
 	}
