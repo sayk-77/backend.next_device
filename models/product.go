@@ -22,4 +22,5 @@ type Products struct {
 	Images   []ProductImage   `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"images"`
 	Reviews  []Review         `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"reviews"`
 	Details  ProductDetails   `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"details"`
+	Filters  []ProductFilter  `gorm:"foreignKey:ProductID"`
 }
