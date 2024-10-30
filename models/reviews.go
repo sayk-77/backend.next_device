@@ -7,7 +7,9 @@ type Review struct {
 	UserID    uint      `json:"userId"`
 	ProductID uint      `json:"productId"`
 	Rating    int       `gorm:"not null;check:rating >= 1 AND rating <= 5" json:"rating"`
-	Review    string    `gorm:"type:text" json:"review"`
+	Pros      string    `gorm:"type:text" json:"pros"`
+	Cons      string    `gorm:"type:text" json:"cons"`
+	Comment   string    `gorm:"type:text" json:"comment"`
 	CreatedAt time.Time `json:"createdAt"`
 
 	User    User     `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`

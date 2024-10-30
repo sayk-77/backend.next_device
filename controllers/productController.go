@@ -220,7 +220,6 @@ func (pc *ProductController) SearchProduct(c *fiber.Ctx) error {
 func (pc *ProductController) GetFilteredProducts(c *fiber.Ctx) error {
 	category := c.Params("category")
 
-	// Объявление структуры фильтров
 	var filters struct {
 		PriceFrom       *int     `json:"priceFrom"`
 		PriceTo         *int     `json:"priceTo"`
@@ -234,12 +233,10 @@ func (pc *ProductController) GetFilteredProducts(c *fiber.Ctx) error {
 		OS              []string `json:"os"`
 	}
 
-	// Парсинг тела запроса в структуру фильтров
 	if err := c.BodyParser(&filters); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	// Прокидываем фильтры в сервис для получения отфильтрованных продуктов
 	products, err := pc.productService.GetFilteredProducts(
 		category,
 		filters.PriceFrom,
@@ -252,13 +249,49 @@ func (pc *ProductController) GetFilteredProducts(c *fiber.Ctx) error {
 		filters.Ratings,
 		filters.CameraQualities,
 		filters.OS,
-		10, // Пример лимита, можно добавить как параметр в запросе
-		0,  // Пример смещения, можно добавить как параметр в запросе
+		10,
+		0,
 	)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	// Возвращаем продукты клиенту
+	return c.Status(fiber.StatusOK).JSON(products)
+}
+
+func (pc *ProductController) GetFilteredLaptops(c *fiber.Ctx) error {
+	var filters struct {
+		PriceFrom  *int     `json:"priceFrom"`
+		PriceTo    *int     `json:"priceTo"`
+		Brands     []string `json:"brands"`
+		ScreenFrom *float64 `json:"screenFrom"`
+		ScreenTo   *float64 `json:"screenTo"`
+		Memories   []string `json:"memories"`
+		RAM        []string `json:"ram"`
+		CpuType    []string `json:"cpuType"`
+		GpuType    []string `json:"gpuType"`
+	}
+
+	if err := c.BodyParser(&filters); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	products, err := pc.productService.GetFilteredLaptops(
+		filters.PriceFrom,
+		filters.PriceTo,
+		filters.Brands,
+		filters.ScreenFrom,
+		filters.ScreenTo,
+		filters.Memories,
+		filters.RAM,
+		filters.CpuType,
+		filters.GpuType,
+		10,
+		0,
+	)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(products)
 }

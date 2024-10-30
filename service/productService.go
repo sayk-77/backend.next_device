@@ -205,12 +205,11 @@ func (ps *ProductService) GetFilteredProducts(
 	category string,
 	priceFrom, priceTo *int,
 	brands []string,
-	screenFrom, screenTo *float64, // Параметры для экрана
-	memories, ram, ratings, cameraQualities, os []string, // Добавлен os
+	screenFrom, screenTo *float64,
+	memories, ram, ratings, cameraQualities, os []string,
 	limit, offset int,
 ) ([]*models.ProductWithMainImage, error) {
 
-	// Вызов метода репозитория с добавленным параметром os
 	products, err := ps.productRepo.GetFilteredProducts(
 		category, priceFrom, priceTo, brands, screenFrom, screenTo, memories, ram, ratings, cameraQualities, os, limit, offset,
 	)
@@ -218,7 +217,40 @@ func (ps *ProductService) GetFilteredProducts(
 		return nil, err
 	}
 
-	// Собираем продукты с изображениями
+	var productsWithImages []*models.ProductWithMainImage
+	for _, product := range products {
+		mainImage, err := ps.imageService.GetMainImage(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		productsWithImages = append(productsWithImages, &models.ProductWithMainImage{
+			Id:            product.ID,
+			Name:          product.Name,
+			Description:   product.Description,
+			SearchName:    product.SearchName,
+			DiscountPrice: product.DiscountPrice,
+			Image:         mainImage.ImageURL,
+			Price:         product.Price,
+		})
+	}
+
+	return productsWithImages, nil
+}
+
+func (ps *ProductService) GetFilteredLaptops(
+	priceFrom, priceTo *int,
+	brands []string,
+	screenFrom, screenTo *float64,
+	memories, ram, cpuType, gpuType []string,
+	limit, offset int,
+) ([]*models.ProductWithMainImage, error) {
+	products, err := ps.productRepo.GetFilteredLaptops(
+		priceFrom, priceTo, brands, screenFrom, screenTo, memories, ram, cpuType, gpuType, limit, offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	var productsWithImages []*models.ProductWithMainImage
 	for _, product := range products {
 		mainImage, err := ps.imageService.GetMainImage(product.ID)
