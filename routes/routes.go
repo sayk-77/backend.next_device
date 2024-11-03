@@ -3,11 +3,13 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"next_device/backend/controllers"
+	"next_device/backend/tools"
 )
 
 func SetupRoutes(app *fiber.App, productController *controllers.ProductController,
 	brandController *controllers.BrandController, categoryController *controllers.CategoryController,
-	productDetailsController *controllers.ProductDetailsController) {
+	productDetailsController *controllers.ProductDetailsController, userController *controllers.UserController,
+	cartController *controllers.CartController) {
 	api := app.Group("/api")
 
 	api.Get("/products", productController.GetAllProducts)
@@ -38,4 +40,9 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	api.Post("/product/details", productDetailsController.CreateProductDetails)
 	api.Put("/product/details/:id", productDetailsController.UpdateProductDetails)
 	api.Delete("/product/details/:id", productDetailsController.DeleteProductDetails)
+	api.Post("/register", userController.Register)
+	api.Post("/login", userController.Login)
+	api.Post("/cart/add", tools.JWTMiddleware, cartController.AddItem)
+	api.Delete("/cart/remove/:productId", tools.JWTMiddleware, cartController.RemoveItem)
+	api.Get("/cart", tools.JWTMiddleware, cartController.GetCartItems)
 }

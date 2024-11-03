@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"next_device/backend/models"
 )
@@ -23,6 +24,11 @@ func (r *UserRepository) GetAllUsers() ([]*models.User, error) {
 }
 
 func (r *UserRepository) CreateUser(user *models.User) error {
+	var existingUser models.User
+	if err := r.db.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
+		return fmt.Errorf("Пользователь с таким email уже существует")
+	}
+
 	if result := r.db.Create(user); result.Error != nil {
 		return result.Error
 	}
@@ -52,4 +58,15 @@ func (r *UserRepository) DeleteUser(id uint) error {
 		return result.Error
 	}
 	return nil
+}
+
+func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	err := r.db.Where("email = ?", email).First(&user).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("Почта или пароль не верны")
+	}
+
+	return &user, err
 }

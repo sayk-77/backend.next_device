@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"errors"
 	"gorm.io/gorm"
 	"next_device/backend/models"
 )
@@ -14,31 +13,41 @@ func NewCartRepository(db *gorm.DB) *CartRepository {
 	return &CartRepository{db: db}
 }
 
-func (cr *CartRepository) CreateCart(cart *models.Cart) error {
-	if result := cr.db.Create(&cart); result.Error != nil {
-		return result.Error
-	}
-	return nil
+func (r *CartRepository) AddItem(cartItem *models.CartItem) error {
+	return r.db.Create(cartItem).Error
 }
 
-func (cr *CartRepository) GetCartById(id uint) (*models.Cart, error) {
-	var cart *models.Cart
-	if result := cr.db.First(&cart, id); result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return cart, result.Error
-		}
-		return nil, result.Error
-	}
-	return cart, nil
+func (r *CartRepository) RemoveItem(cartID, productID uint) error {
+	return r.db.Where("cart_id = ? AND product_id = ?", cartID, productID).Delete(&models.CartItem{}).Error
 }
 
-func (cr *CartRepository) GetCartByUserId(id uint) (*models.Cart, error) {
-	var cart *models.Cart
-	if result := cr.db.First(&cart, id); result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return cart, result.Error
-		}
-		return nil, result.Error
+func (r *CartRepository) GetCartItems(userID uint) ([]models.CartItem, error) {
+	var items []models.CartItem
+	var cart models.Cart
+
+	err := r.db.Where("user_id = ?", userID).First(&cart).Error
+	if err != nil {
+		return items, err
 	}
-	return cart, nil
+
+	err = r.db.Where("cart_id = ?", cart.ID).Find(&items).Error
+	if err != nil {
+		return items, err
+	}
+
+	return items, err
+}
+
+func (r *CartRepository) GetCartByUserID(userID uint) (uint, error) {
+	var cart models.Cart
+	err := r.db.Where("user_id = ?", userID).First(&cart).Error
+	return cart.ID, err
+}
+
+func (r *CartRepository) CreateCart(cart *models.Cart) (uint, error) {
+	err := r.db.Create(cart).Error
+	if err != nil {
+		return 0, err
+	}
+	return cart.ID, nil
 }
