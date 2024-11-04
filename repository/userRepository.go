@@ -37,7 +37,7 @@ func (r *UserRepository) CreateUser(user *models.User) error {
 
 func (r *UserRepository) GetUserByID(id uint) (*models.User, error) {
 	var user *models.User
-	if result := r.db.First(&user, id); result.Error != nil {
+	if result := r.db.Preload("Addresses").Preload("Orders").Find(&user, id); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

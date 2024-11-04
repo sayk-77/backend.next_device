@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"errors"
 	"gorm.io/gorm"
 	"next_device/backend/models"
 )
@@ -11,49 +10,20 @@ type OrderRepository struct {
 }
 
 func NewOrderRepository(db *gorm.DB) *OrderRepository {
-	return &OrderRepository{db}
+	return &OrderRepository{db: db}
 }
 
-func (or *OrderRepository) CreateOrder(order *models.Order) error {
-	if err := or.db.Create(&order).Error; err != nil {
+func (r *OrderRepository) CreateOrder(order *models.Order) error {
+	return r.db.Create(order).Error
+}
+
+func (r *OrderRepository) CreateOrderItems(items []models.OrderItem) error {
+	return r.db.Create(&items).Error
+}
+
+func (r *OrderRepository) DeleteOrder(orderId uint) error {
+	if err := r.db.Where("order_id = ?", orderId).Delete(&models.OrderItem{}).Error; err != nil {
 		return err
 	}
-	return nil
-}
-
-func (or *OrderRepository) GetOrderById(id uint) (*models.Order, error) {
-	var order *models.Order
-	if result := or.db.First(&order, id); result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, result.Error
-	}
-	return order, nil
-}
-
-func (or *OrderRepository) GetAllOrders() ([]*models.Order, error) {
-	var orders []*models.Order
-	if result := or.db.Find(&orders); result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return orders, nil
-		}
-		return nil, result.Error
-	}
-
-	return orders, nil
-}
-
-func (or *OrderRepository) UpdateOrder(order *models.Order) error {
-	if result := or.db.Save(*order); result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
-func (or *OrderRepository) DeleteOrder(id uint) error {
-	if result := or.db.Delete(&models.Order{}, id); result.Error != nil {
-		return result.Error
-	}
-	return nil
+	return r.db.Delete(&models.Order{}, "id = ?", orderId).Error
 }

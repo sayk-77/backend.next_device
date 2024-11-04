@@ -24,3 +24,18 @@ type UserResponse struct {
 	ID    uint   `json:"id"`
 	Token string `json:"token"`
 }
+
+type UserProfileResponse struct {
+	ID        uint      `json:"id"`
+	Email     string    `json:"email"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	Addresses []Address `json:"addresses"`
+	Orders    []Order   `json:"orders"`
+	Reviews   []Review  `json:"reviews"`
+	CartItems []Cart    `json:"cartItems"`
+}

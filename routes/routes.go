@@ -9,7 +9,7 @@ import (
 func SetupRoutes(app *fiber.App, productController *controllers.ProductController,
 	brandController *controllers.BrandController, categoryController *controllers.CategoryController,
 	productDetailsController *controllers.ProductDetailsController, userController *controllers.UserController,
-	cartController *controllers.CartController) {
+	cartController *controllers.CartController, paymentController *controllers.PaymentController) {
 	api := app.Group("/api")
 
 	api.Get("/products", productController.GetAllProducts)
@@ -45,4 +45,7 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	api.Post("/cart/add", tools.JWTMiddleware, cartController.AddItem)
 	api.Delete("/cart/remove/:productId", tools.JWTMiddleware, cartController.RemoveItem)
 	api.Get("/cart", tools.JWTMiddleware, cartController.GetCartItems)
+	api.Get("/user", tools.JWTMiddleware, userController.GetUserById)
+	api.Post("/payment", tools.JWTMiddleware, paymentController.HandlePaymentIntent)
+	api.Post("/payment/status", tools.JWTMiddleware, paymentController.HandlePaymentStatus)
 }

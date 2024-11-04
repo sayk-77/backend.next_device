@@ -36,3 +36,7 @@ func (s *UserService) Login(email, password string) (*models.User, error) {
 
 	return user, nil
 }
+
+func (s *UserService) GetUserById(id uint) (*models.User, error) {
+	return s.userRepo.GetUserByID(id)
+}

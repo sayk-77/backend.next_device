@@ -65,3 +65,24 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Login successful", "user": userResponse})
 }
+
+func (c *UserController) GetUserById(ctx *fiber.Ctx) error {
+	userID := ctx.Locals("userID").(uint)
+
+	user, err := c.userService.GetUserById(userID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	userResponse := models.UserProfileResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Role:      user.Role,
+		Addresses: user.Addresses,
+		Orders:    user.Orders,
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"user": userResponse})
+}
