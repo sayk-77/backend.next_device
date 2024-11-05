@@ -46,11 +46,11 @@ func (r *UserRepository) GetUserByID(id uint) (*models.User, error) {
 	return user, nil
 }
 
-func (r *UserRepository) UpdateUser(user *models.User) error {
+func (r *UserRepository) UpdateUser(user *models.User) (string, error) {
 	if result := r.db.Save(user); result.Error != nil {
-		return result.Error
+		return "", result.Error
 	}
-	return nil
+	return "Данные успешно изменены", nil
 }
 
 func (r *UserRepository) DeleteUser(id uint) error {
@@ -69,4 +69,47 @@ func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 	}
 
 	return &user, err
+}
+
+func (r *UserRepository) ChangePassword(id uint, newPassword string) (string, error) {
+	var user models.User
+	if err := r.db.First(&user, id).Error; err != nil {
+		return "", err
+	}
+	user.PasswordHash = newPassword
+
+	if err := r.db.Save(&user).Error; err != nil {
+		return "", err
+	}
+
+	return "Пароль изменен", nil
+}
+
+func (r *UserRepository) GetPasswordUserById(id uint) (string, error) {
+	var user models.User
+	if err := r.db.First(&user, id).Error; err != nil {
+		return "", err
+	}
+	return user.PasswordHash, nil
+}
+
+func (r *UserRepository) AddNewAddress(address *models.Address) (string, error) {
+	if err := r.db.Save(&address).Error; err != nil {
+		return "", err
+	}
+	return "Адрес добавлен", nil
+}
+
+func (r *UserRepository) DeleteAddress(addressId, userId uint) (string, error) {
+	result := r.db.Where("id = ? AND user_id = ?", addressId, userId).Delete(&models.Address{})
+
+	if result.Error != nil {
+		return "", result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return "", fmt.Errorf("Адрес не найден")
+	}
+
+	return "Адрес успешно удален", nil
 }
