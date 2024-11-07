@@ -13,12 +13,12 @@ func NewOrderService(orderRepo *repository.OrderRepository) *OrderService {
 	return &OrderService{orderRepo: orderRepo}
 }
 
-func (s *OrderService) CreateOrder(userID uint, items []models.OrderItem, totalPrice float64) (*models.Order, error) {
-	// Создаем заказ
+func (s *OrderService) CreateOrder(userID uint, items []models.OrderItem, totalPrice float64, address uint) (*models.Order, error) {
 	order := &models.Order{
 		UserID:     userID,
 		TotalPrice: totalPrice,
 		Status:     "pending",
+		AddressID:  address,
 	}
 
 	if err := s.orderRepo.CreateOrder(order); err != nil {
@@ -42,4 +42,8 @@ func (s *OrderService) DeleteOrder(orderId uint) error {
 		return err
 	}
 	return nil
+}
+
+func (s *OrderService) FindOrderById(orderId uint) (*models.Order, error) {
+	return s.orderRepo.FindOrderById(orderId)
 }

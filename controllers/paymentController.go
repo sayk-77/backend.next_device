@@ -27,6 +27,7 @@ func (c *PaymentController) HandlePaymentIntent(ctx *fiber.Ctx) error {
 	var req struct {
 		OrderItems []models.OrderItem `json:"orderItems"`
 		TotalPrice float64            `json:"totalPrice"`
+		Address    int                `json:"address"`
 	}
 
 	if err := ctx.BodyParser(&req); err != nil {
@@ -35,7 +36,7 @@ func (c *PaymentController) HandlePaymentIntent(ctx *fiber.Ctx) error {
 
 	userID := ctx.Locals("userID").(uint)
 
-	order, err := c.orderService.CreateOrder(userID, req.OrderItems, req.TotalPrice)
+	order, err := c.orderService.CreateOrder(userID, req.OrderItems, req.TotalPrice, uint(req.Address))
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create order"})
 	}
