@@ -42,15 +42,44 @@ func (rr *ReviewRepository) GetReviewById(id uint) (*models.Review, error) {
 	}
 	return review, nil
 }
-func (rr *ReviewRepository) UpdateReview(review *models.Review) error {
+
+func (rr *ReviewRepository) DeleteReview(id uint) error {
+	if result := rr.db.Delete(&models.Review{}, id); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (rr *ReviewRepository) PublishReview(reviewId uint) error {
+	var review models.Review
+	if result := rr.db.First(&review, reviewId); result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return result.Error
+		}
+	}
+	review.IsModer = true
 	if result := rr.db.Save(&review); result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (rr *ReviewRepository) DeleteReview(id uint) error {
-	if result := rr.db.Delete(&models.Review{}, id); result.Error != nil {
+func (rr *ReviewRepository) GetReviewForProduct(reviewId uint) ([]*models.Review, error) {
+	var review []*models.Review
+	if result := rr.db.
+		Where("product_id = ? and is_moder = true", reviewId).
+		Preload("Images").
+		Find(&review); result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, result.Error
+		}
+	}
+
+	return review, nil
+}
+
+func (rr *ReviewRepository) CreateReviewImages(reviewImages []models.ReviewImage) error {
+	if result := rr.db.Create(&reviewImages); result.Error != nil {
 		return result.Error
 	}
 	return nil

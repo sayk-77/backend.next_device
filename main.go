@@ -29,6 +29,7 @@ func main() {
 	tools.GetImageBrand(app)
 	tools.GetImageBanner(app)
 	tools.GetImageCategory(app)
+	tools.GetReviewImage(app)
 
 	server := app.Listen("localhost:5000")
 	if server != nil {

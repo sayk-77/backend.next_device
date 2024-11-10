@@ -10,7 +10,7 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	brandController *controllers.BrandController, categoryController *controllers.CategoryController,
 	productDetailsController *controllers.ProductDetailsController, userController *controllers.UserController,
 	cartController *controllers.CartController, paymentController *controllers.PaymentController,
-	orderController *controllers.OrderController) {
+	orderController *controllers.OrderController, reviewController *controllers.ReviewController) {
 	api := app.Group("/api")
 
 	api.Get("/products", productController.GetAllProducts)
@@ -54,4 +54,9 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	api.Post("/payment", tools.JWTMiddleware, paymentController.HandlePaymentIntent)
 	api.Post("/payment/status", tools.JWTMiddleware, paymentController.HandlePaymentStatus)
 	api.Get("/order/:id", tools.JWTMiddleware, orderController.GetOrderById)
+	api.Get("/review/product/:id", reviewController.GetReviewForProduct)
+	api.Get("/review/:id", tools.JWTMiddleware, reviewController.GetReviewById)
+	api.Put("/review/:id", tools.JWTMiddleware, reviewController.PublishReview)
+	api.Post("/review", tools.JWTMiddleware, reviewController.CreateReview)
+	api.Delete("/review", tools.JWTMiddleware, reviewController.DeleteReview)
 }

@@ -43,9 +43,12 @@ func InitDependencies(app *fiber.App, db *gorm.DB) {
 
 	paymentRepo := repository.NewPaymentRepository(db)
 	paymentService := service.NewPaymentService(paymentRepo)
-
 	paymentController := controllers.NewPaymentController(paymentService, orderService)
 
+	reviewRepo := repository.NewReviewRepository(db)
+	reviewService := service.NewReviewService(reviewRepo)
+	reviewController := controllers.NewReviewController(reviewService)
+
 	routes.SetupRoutes(app, productController, brandController, categoryController, productDetailsController, userController,
-		cartController, paymentController, orderController)
+		cartController, paymentController, orderController, reviewController)
 }

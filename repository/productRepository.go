@@ -129,7 +129,7 @@ func (pr *ProductRepository) GetNewProductsPaged(limit, offset int) ([]*models.P
 	var products []*models.Products
 
 	if result := pr.db.
-		Select("id", "name", "description", "price", "search_name").
+		Select("id", "name", "description", "price", "search_name", "discount_price").
 		Order("created_at DESC").
 		Limit(limit).
 		Offset(offset).

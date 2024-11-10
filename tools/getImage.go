@@ -98,3 +98,26 @@ func GetImageCategory(app *fiber.App) {
 		return c.SendFile(absPath)
 	})
 }
+
+func GetReviewImage(app *fiber.App) {
+	imageDir := "./images_review"
+
+	app.Get("/api/images/review/:name", func(c *fiber.Ctx) error {
+		filename := c.Params("name")
+
+		imagePath := filepath.Join(imageDir, filename)
+
+		absPath, err := filepath.Abs(imagePath)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		}
+
+		fmt.Println("Looking for image at:", absPath)
+
+		if _, err := os.Stat(absPath); os.IsNotExist(err) {
+			return c.Status(fiber.StatusNotFound).SendString("Image not found")
+		}
+
+		return c.SendFile(absPath)
+	})
+}

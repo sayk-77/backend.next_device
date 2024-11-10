@@ -10,8 +10,10 @@ type Review struct {
 	Pros      string    `gorm:"type:text" json:"pros"`
 	Cons      string    `gorm:"type:text" json:"cons"`
 	Comment   string    `gorm:"type:text" json:"comment"`
+	IsModer   bool      `gorm:"default:false" json:"isModer"`
 	CreatedAt time.Time `json:"createdAt"`
 
-	User    User     `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
-	Product Products `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	User    User          `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	Product Products      `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	Images  []ReviewImage `gorm:"foreignKey:ReviewId" json:"images"`
 }
