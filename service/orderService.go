@@ -47,3 +47,7 @@ func (s *OrderService) DeleteOrder(orderId uint) error {
 func (s *OrderService) FindOrderById(orderId uint) (*models.Order, error) {
 	return s.orderRepo.FindOrderById(orderId)
 }
+
+func (s *OrderService) GetAllOrders() ([]models.Order, error) {
+	return s.orderRepo.GetAllOrder()
+}

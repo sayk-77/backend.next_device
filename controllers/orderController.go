@@ -23,5 +23,12 @@ func (c *OrderController) GetOrderById(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(order)
+}
 
+func (c *OrderController) GetAllOrders(ctx *fiber.Ctx) error {
+	orders, err := c.orderService.GetAllOrders()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return ctx.Status(fiber.StatusOK).JSON(orders)
 }

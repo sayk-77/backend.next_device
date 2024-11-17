@@ -36,3 +36,7 @@ func (s *ReviewService) GetReviewForProduct(productId uint) ([]*models.Review, e
 func (s *ReviewService) CreateReviewImages(reviewImages []models.ReviewImage) error {
 	return s.reviewRep.CreateReviewImages(reviewImages)
 }
+
+func (s *ReviewService) GetAllReviews() ([]*models.Review, error) {
+	return s.reviewRep.GetAllReview()
+}

@@ -23,12 +23,15 @@ func (pr *ProductRepository) CreateProduct(products *models.Products) error {
 }
 func (pr *ProductRepository) GetAllProduct() ([]*models.Products, error) {
 	var products []*models.Products
-	if result := pr.db.Find(&products); result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return products, nil
-		}
+	query := pr.db.Select("id, name, description, price, discount_price, search_name").
+		Order("name ASC").
+		Limit(50).
+		Offset(1)
+
+	if result := query.Find(&products); result.Error != nil {
 		return nil, result.Error
 	}
+
 	return products, nil
 }
 
@@ -84,8 +87,8 @@ func (pr *ProductRepository) GetProductsByCategoryPaged(category string, limit, 
 		Select("products.*, categories.title AS category_title").
 		Joins("JOIN categories ON products.category_id = categories.id").
 		Where("categories.name = ?", category).
-		Limit(limit).
-		Offset(offset).
+		Limit(10).
+		Offset(1).
 		Scan(&products); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return products, "", nil

@@ -131,3 +131,11 @@ func (c *ReviewController) GetReviewForProduct(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(reviews)
 }
+
+func (c *ReviewController) GetAllReviews(ctx *fiber.Ctx) error {
+	review, err := c.reviewService.GetAllReviews()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+	return ctx.JSON(review)
+}

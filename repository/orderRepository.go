@@ -39,3 +39,13 @@ func (r *OrderRepository) DeleteOrder(orderId uint) error {
 	}
 	return r.db.Delete(&models.Order{}, "id = ?", orderId).Error
 }
+
+func (r *OrderRepository) GetAllOrder() ([]models.Order, error) {
+	var orders []models.Order
+
+	if err := r.db.
+		Find(&orders).Error; err != nil {
+		return orders, nil
+	}
+	return orders, nil
+}
