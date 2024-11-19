@@ -23,7 +23,10 @@ func (rr *ReviewRepository) CreateReview(review *models.Review) error {
 
 func (rr *ReviewRepository) GetAllReview() ([]*models.Review, error) {
 	var reviews []*models.Review
-	if result := rr.db.Find(&reviews); result.Error != nil {
+	if result := rr.db.
+		Preload("Images").
+		Where("is_moder = ?", false).
+		Find(&reviews); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return reviews, nil
 		}
@@ -44,6 +47,10 @@ func (rr *ReviewRepository) GetReviewById(id uint) (*models.Review, error) {
 }
 
 func (rr *ReviewRepository) DeleteReview(id uint) error {
+	if err := rr.db.Where("review_id = ?", id).Delete(&models.ReviewImage{}).Error; err != nil {
+		return err
+	}
+
 	if result := rr.db.Delete(&models.Review{}, id); result.Error != nil {
 		return result.Error
 	}

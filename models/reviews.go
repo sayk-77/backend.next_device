@@ -15,5 +15,5 @@ type Review struct {
 
 	User    User          `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 	Product Products      `gorm:"foreignKey:ProductID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
-	Images  []ReviewImage `gorm:"foreignKey:ReviewId" json:"images"`
+	Images  []ReviewImage `gorm:"foreignKey:ReviewId;constraint:OnDelete:CASCADE;" json:"images"`
 }

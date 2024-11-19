@@ -60,5 +60,5 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	api.Get("/review/:id", tools.JWTMiddleware, reviewController.GetReviewById)
 	api.Put("/review/:id", tools.JWTMiddleware, reviewController.PublishReview)
 	api.Post("/review", tools.JWTMiddleware, reviewController.CreateReview)
-	api.Delete("/review", tools.JWTMiddleware, reviewController.DeleteReview)
+	api.Delete("/review/:id", tools.JWTMiddleware, reviewController.DeleteReview)
 }

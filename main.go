@@ -41,13 +41,11 @@ func updateMetrics() {
 		cpuPercent, err := proc.CPUPercent()
 		if err == nil {
 			cpuUsage.Set(cpuPercent)
-			log.Printf("Обновление CPU: %.2f%%\n", cpuPercent)
 		}
 
 		memInfo, err := proc.MemoryInfo()
 		if err == nil {
 			memoryUsage.Set(float64(memInfo.RSS))
-			log.Printf("Обновление памяти: %.2f GB\n", float64(memInfo.RSS)/1e9)
 		}
 
 		time.Sleep(1 * time.Second)
