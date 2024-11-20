@@ -14,6 +14,7 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	api := app.Group("/api")
 
 	api.Get("/products", productController.GetAllProducts)
+	api.Put("/products", productController.UpdateProduct)
 	api.Get("/products/category", productController.GetProductsByBrandAndCategory)
 	api.Get("/search", productController.SearchProduct)
 	api.Post("/product/laptop/query", productController.GetFilteredLaptops)
@@ -37,6 +38,7 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	api.Post("/categories", categoryController.CreateCategory)
 	api.Put("/categories/:id", categoryController.UpdateCategory)
 	api.Delete("/categories/:id", categoryController.DeleteCategory)
+	api.Post("/product/images", productController.CreateImageProduct)
 	api.Get("/product/details/:id", productDetailsController.GetProductDetails)
 	api.Post("/product/details", productDetailsController.CreateProductDetails)
 	api.Put("/product/details/:id", productDetailsController.UpdateProductDetails)
@@ -56,6 +58,7 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	api.Get("/order/all", tools.JWTMiddleware, orderController.GetAllOrders)
 	api.Get("/order/:id", tools.JWTMiddleware, orderController.GetOrderById)
 	api.Get("/review/all", tools.JWTMiddleware, reviewController.GetAllReviews)
+	api.Post("/order/status", reviewController.ChangeStatus)
 	api.Get("/review/product/:id", reviewController.GetReviewForProduct)
 	api.Get("/review/:id", tools.JWTMiddleware, reviewController.GetReviewById)
 	api.Put("/review/:id", tools.JWTMiddleware, reviewController.PublishReview)

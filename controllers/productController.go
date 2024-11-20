@@ -18,22 +18,22 @@ func NewProductController(productService *service.ProductService) *ProductContro
 }
 
 func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
-	var product models.Products
+	var product *models.Products
 
 	if err := c.BodyParser(&product); err != nil {
+		fmt.Println("Error parsing request body:", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid product data",
 		})
 	}
 
-	if err := pc.productService.CreateProduct(&product); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create product",
-		})
+	productId, err := pc.productService.CreateProduct(product)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message": "Product created successfully",
+		"productId": productId,
 	})
 }
 
@@ -294,4 +294,69 @@ func (pc *ProductController) GetFilteredLaptops(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(products)
+}
+
+func (pc *ProductController) CreateImageProduct(c *fiber.Ctx) error {
+	productId := c.FormValue("productId")
+	if productId == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "productId is required",
+		})
+	}
+
+	productIdInt, err := strconv.Atoi(productId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid productId format",
+		})
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse multipart form",
+		})
+	}
+
+	files := form.File["images"]
+
+	if len(files) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "No images found in request",
+		})
+	}
+
+	var imageRecords []models.ProductImage
+
+	for i, file := range files {
+		uniqueFileName := fmt.Sprintf("image_%d_%s", productIdInt, file.Filename)
+
+		savePath := fmt.Sprintf("./images_product/%s", uniqueFileName)
+
+		if err := c.SaveFile(file, savePath); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to save image",
+			})
+		}
+
+		isMain := false
+		if i == 0 {
+			isMain = true
+		}
+
+		imageRecord := models.ProductImage{
+			ProductID: uint(productIdInt),
+			ImageURL:  uniqueFileName,
+			IsMain:    isMain,
+		}
+		imageRecords = append(imageRecords, imageRecord)
+	}
+
+	if err := pc.productService.SaveProductImages(imageRecords); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to save images to database",
+		})
+	}
+
+	return c.Status(200).JSON("success")
 }

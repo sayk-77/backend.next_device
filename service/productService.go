@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"next_device/backend/models"
 	"next_device/backend/repository"
@@ -26,7 +27,7 @@ func NewProductService(productRepo *repository.ProductRepository, imageService *
 	return &ProductService{productRepo: productRepo, imageService: imageService, brandRepo: brandRepo, categoryRepo: categoryRepo}
 }
 
-func (ps *ProductService) CreateProduct(product *models.Products) error {
+func (ps *ProductService) CreateProduct(product *models.Products) (uint, error) {
 	return ps.productRepo.CreateProduct(product)
 }
 
@@ -52,7 +53,6 @@ func (ps *ProductService) GetAllProducts() ([]*models.ProductWithMainImage, erro
 			Price:         product.Price,
 		})
 	}
-
 	return productsWithImages, nil
 }
 
@@ -342,4 +342,12 @@ func (ps *ProductService) GetFilteredLaptops(
 	}
 
 	return productsWithImages, nil
+}
+
+func (ps *ProductService) SaveProductImages(image []models.ProductImage) error {
+	if len(image) == 0 {
+		return errors.New("no images to save")
+	}
+
+	return ps.productRepo.SaveImages(image)
 }

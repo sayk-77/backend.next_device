@@ -139,3 +139,19 @@ func (c *ReviewController) GetAllReviews(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(review)
 }
+
+func (c *ReviewController) ChangeStatus(ctx *fiber.Ctx) error {
+	var req struct {
+		OrderId int    `json:"orderId"`
+		Status  string `json:"status"`
+	}
+	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := c.reviewService.ChangeStatus(uint(req.OrderId), req.Status); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	return ctx.JSON("success")
+}

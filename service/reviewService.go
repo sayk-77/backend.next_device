@@ -40,3 +40,7 @@ func (s *ReviewService) CreateReviewImages(reviewImages []models.ReviewImage) er
 func (s *ReviewService) GetAllReviews() ([]*models.Review, error) {
 	return s.reviewRep.GetAllReview()
 }
+
+func (s *ReviewService) ChangeStatus(orderId uint, status string) error {
+	return s.reviewRep.ChangeStatus(orderId, status)
+}

@@ -15,19 +15,16 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
-func (pr *ProductRepository) CreateProduct(products *models.Products) error {
+func (pr *ProductRepository) CreateProduct(products *models.Products) (uint, error) {
 	if result := pr.db.Create(products); result.Error != nil {
-		return result.Error
+		return 0, result.Error
 	}
-	return nil
+	return products.ID, nil
 }
 func (pr *ProductRepository) GetAllProduct() ([]*models.Products, error) {
 	var products []*models.Products
 	query := pr.db.Select("id, name, description, price, discount_price, search_name").
-		Order("name ASC").
-		Limit(50).
-		Offset(1)
-
+		Order("name ASC")
 	if result := query.Find(&products); result.Error != nil {
 		return nil, result.Error
 	}
@@ -365,4 +362,15 @@ func (pr *ProductRepository) GetFilteredLaptops(
 	}
 
 	return products, nil
+}
+
+func (pr *ProductRepository) SaveImages(images []models.ProductImage) error {
+	return pr.db.Transaction(func(tx *gorm.DB) error {
+		for _, image := range images {
+			if err := tx.Create(&image).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }

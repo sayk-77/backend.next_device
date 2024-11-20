@@ -91,3 +91,17 @@ func (rr *ReviewRepository) CreateReviewImages(reviewImages []models.ReviewImage
 	}
 	return nil
 }
+
+func (rr *ReviewRepository) ChangeStatus(orderId uint, status string) error {
+	var order models.Order
+	if result := rr.db.First(&order, orderId); result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return result.Error
+		}
+	}
+	order.Status = status
+	if result := rr.db.Save(&order); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
