@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"next_device/backend/models"
 	"next_device/backend/service"
@@ -22,16 +23,12 @@ func (c *NotificationController) Subscribe(ctx *fiber.Ctx) error {
 		})
 	}
 
-	c.service.AddSubscription(sub)
+	userID := ctx.Locals("userID").(uint)
+
+	c.service.AddSubscription(&sub, int(userID))
 
 	return ctx.JSON(fiber.Map{
 		"message": "Подписка успешно сохранена",
-	})
-}
-
-func (c *NotificationController) GetPublicKey(ctx *fiber.Ctx) error {
-	return ctx.JSON(fiber.Map{
-		"publicKey": c.service.GetPublicKey(),
 	})
 }
 
@@ -51,5 +48,33 @@ func (c *NotificationController) SendNotification(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(fiber.Map{
 		"message": "Уведомления отправлены всем подписчикам",
+	})
+}
+
+func (c *NotificationController) SendNotificationToUser(ctx *fiber.Ctx) error {
+	userID := ctx.Params("userId", "-1")
+
+	var userIDInt int
+	if _, err := fmt.Sscanf(userID, "%d", &userIDInt); err != nil || userIDInt <= 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Неверный идентификатор пользователя",
+		})
+	}
+
+	var notif models.Notification
+	if err := ctx.BodyParser(&notif); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Неверный формат данных",
+		})
+	}
+
+	if err := c.service.SendNotificationToUser(userIDInt, notif); err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Ошибка при отправке уведомления пользователю",
+		})
+	}
+
+	return ctx.JSON(fiber.Map{
+		"message": "Уведомление отправлено пользователю",
 	})
 }

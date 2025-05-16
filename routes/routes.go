@@ -14,8 +14,9 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	pushController *controllers.NotificationController) {
 	api := app.Group("/api")
 
-	api.Post("/subscribe", pushController.Subscribe)
+	api.Post("/subscribe", tools.JWTMiddleware, pushController.Subscribe)
 	api.Post("/push-not", pushController.SendNotification)
+	api.Post("/push-not/:userId", pushController.SendNotificationToUser)
 	api.Get("/products", productController.GetAllProducts)
 	api.Put("/products", productController.UpdateProduct)
 	api.Get("/products/category", productController.GetProductsByBrandAndCategory)
