@@ -49,9 +49,14 @@ func InitDependencies(app *fiber.App, db *gorm.DB) {
 	pushService := service.NewNotificationService(pushRepo)
 	pushController := controllers.NewNotificationController(pushService)
 
+	emailService, err := service.NewEmailService("smtp.gmail.com", "587", "yawaihv2@gmail.com", "bdkp ntae lrro bswq")
+	if err != nil {
+		panic(err)
+	}
+
 	reviewRepo := repository.NewReviewRepository(db)
 	reviewService := service.NewReviewService(reviewRepo)
-	reviewController := controllers.NewReviewController(reviewService, pushService, orderService)
+	reviewController := controllers.NewReviewController(reviewService, pushService, orderService, userService, emailService)
 
 	routes.SetupRoutes(app, productController, brandController, categoryController, productDetailsController, userController,
 		cartController, paymentController, orderController, reviewController, pushController)

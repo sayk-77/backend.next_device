@@ -17,10 +17,12 @@ type ReviewController struct {
 	reviewService *service.ReviewService
 	pushService   *service.NotificationService
 	orderService  *service.OrderService
+	userService   *service.UserService
+	emailService  *service.EmailService
 }
 
-func NewReviewController(reviewService *service.ReviewService, pushService *service.NotificationService, orderService *service.OrderService) *ReviewController {
-	return &ReviewController{reviewService: reviewService, pushService: pushService, orderService: orderService}
+func NewReviewController(reviewService *service.ReviewService, pushService *service.NotificationService, orderService *service.OrderService, userService *service.UserService, emailService *service.EmailService) *ReviewController {
+	return &ReviewController{reviewService: reviewService, pushService: pushService, orderService: orderService, userService: userService, emailService: emailService}
 }
 
 func generateUniqueName() string {
@@ -103,8 +105,6 @@ func (c *ReviewController) DeleteReview(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	result := c.reviewService.DeleteReview(uint(reviewId))
-
 	review, err := c.reviewService.GetReviewById(uint(reviewId))
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
@@ -112,9 +112,21 @@ func (c *ReviewController) DeleteReview(ctx *fiber.Ctx) error {
 
 	userID := int(review.UserID)
 
+	user, err := c.userService.GetUserById(uint(userID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	result := c.reviewService.DeleteReview(uint(reviewId))
+
+	err = c.emailService.SendReviewStatusEmail(user.Email, user.FirstName, "был отклонен, так как он содержил недопустимый контент")
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
 	notif := models.Notification{
 		Title: "Отзыв",
-		Body:  "Ваш отзыв был отклонен, так как содержал недопустимый контент",
+		Body:  "Ваш отзыв был отклонен, так как он содержал недопустимый контент",
 		Icon:  "/logo_not.webp",
 		Link:  "http://localhost:3000/profile",
 	}
@@ -143,6 +155,16 @@ func (c *ReviewController) PublishReview(ctx *fiber.Ctx) error {
 	}
 
 	userID := int(review.UserID)
+
+	user, err := c.userService.GetUserById(uint(userID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	err = c.emailService.SendReviewStatusEmail(user.Email, user.FirstName, "был опубликован. Теперь его видят все пользователи")
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
 
 	notif := models.Notification{
 		Title: "Отзыв",
@@ -203,6 +225,16 @@ func (c *ReviewController) ChangeStatus(ctx *fiber.Ctx) error {
 	}
 
 	userID := int(order.UserID)
+
+	user, err := c.userService.GetUserById(uint(userID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	err = c.emailService.SendOrderStatusEmail(user.Email, user.FirstName, req.Status, req.OrderId)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
 
 	notif := models.Notification{
 		Title: "Заказ",
