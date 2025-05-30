@@ -15,10 +15,14 @@ import (
 
 type ReviewController struct {
 	reviewService *service.ReviewService
+	pushService   *service.NotificationService
+	orderService  *service.OrderService
+	userService   *service.UserService
+	emailService  *service.EmailService
 }
 
-func NewReviewController(reviewService *service.ReviewService) *ReviewController {
-	return &ReviewController{reviewService: reviewService}
+func NewReviewController(reviewService *service.ReviewService, pushService *service.NotificationService, orderService *service.OrderService, userService *service.UserService, emailService *service.EmailService) *ReviewController {
+	return &ReviewController{reviewService: reviewService, pushService: pushService, orderService: orderService, userService: userService, emailService: emailService}
 }
 
 func generateUniqueName() string {
@@ -101,7 +105,38 @@ func (c *ReviewController) DeleteReview(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	review, err := c.reviewService.GetReviewById(uint(reviewId))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	userID := int(review.UserID)
+
+	user, err := c.userService.GetUserById(uint(userID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
 	result := c.reviewService.DeleteReview(uint(reviewId))
+
+	err = c.emailService.SendReviewStatusEmail(user.Email, user.FirstName, "был отклонен, так как он содержил недопустимый контент")
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	notif := models.Notification{
+		Title: "Отзыв",
+		Body:  "Ваш отзыв был отклонен, так как он содержал недопустимый контент",
+		Icon:  "/logo_not.webp",
+		Link:  "http://localhost:3000/profile",
+	}
+
+	if err := c.pushService.SendNotificationToUser(userID, notif); err != nil {
+		log.Printf("Не удалось отправить уведомление пользователю %d: %v", userID, err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Не удалось отправить уведомление",
+		})
+	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": result})
 }
@@ -113,6 +148,37 @@ func (c *ReviewController) PublishReview(ctx *fiber.Ctx) error {
 	}
 
 	result := c.reviewService.PublishReview(uint(reviewId))
+
+	review, err := c.reviewService.GetReviewById(uint(reviewId))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	userID := int(review.UserID)
+
+	user, err := c.userService.GetUserById(uint(userID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	err = c.emailService.SendReviewStatusEmail(user.Email, user.FirstName, "был опубликован. Теперь его видят все пользователи")
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	notif := models.Notification{
+		Title: "Отзыв",
+		Body:  "Ваш отзыв был опубликован",
+		Icon:  "/logo_not.webp",
+		Link:  "http://localhost:3000/profile",
+	}
+
+	if err := c.pushService.SendNotificationToUser(userID, notif); err != nil {
+		log.Printf("Не удалось отправить уведомление пользователю %d: %v", userID, err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Не удалось отправить уведомление",
+		})
+	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": result})
 
@@ -153,5 +219,36 @@ func (c *ReviewController) ChangeStatus(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
 	}
 
-	return ctx.JSON("success")
+	order, err := c.orderService.FindOrderById(uint(req.OrderId))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	userID := int(order.UserID)
+
+	user, err := c.userService.GetUserById(uint(userID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	err = c.emailService.SendOrderStatusEmail(user.Email, user.FirstName, req.Status, req.OrderId)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err})
+	}
+
+	notif := models.Notification{
+		Title: "Заказ",
+		Body:  "Статус вашего заказа изменен",
+		Icon:  "/logo_not.webp",
+		Link:  "http://localhost:3000/profile",
+	}
+
+	if err := c.pushService.SendNotificationToUser(userID, notif); err != nil {
+		log.Printf("Не удалось отправить уведомление пользователю %d: %v", userID, err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Не удалось отправить уведомление",
+		})
+	}
+
+	return ctx.JSON(fiber.Map{"status": "success"})
 }

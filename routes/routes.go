@@ -10,9 +10,13 @@ func SetupRoutes(app *fiber.App, productController *controllers.ProductControlle
 	brandController *controllers.BrandController, categoryController *controllers.CategoryController,
 	productDetailsController *controllers.ProductDetailsController, userController *controllers.UserController,
 	cartController *controllers.CartController, paymentController *controllers.PaymentController,
-	orderController *controllers.OrderController, reviewController *controllers.ReviewController) {
+	orderController *controllers.OrderController, reviewController *controllers.ReviewController,
+	pushController *controllers.NotificationController) {
 	api := app.Group("/api")
 
+	api.Post("/subscribe", tools.JWTMiddleware, pushController.Subscribe)
+	api.Post("/push-not", pushController.SendNotification)
+	api.Post("/push-not/:userId", pushController.SendNotificationToUser)
 	api.Get("/products", productController.GetAllProducts)
 	api.Put("/products", productController.UpdateProduct)
 	api.Get("/products/category", productController.GetProductsByBrandAndCategory)

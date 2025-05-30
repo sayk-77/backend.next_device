@@ -34,8 +34,8 @@ func (s *PaymentService) CreateCheckoutSession(orderID uint, totalPrice float64)
 			},
 		},
 		Mode:       stripe.String("payment"),
-		SuccessURL: stripe.String("https://localhost:3000/success?order_id=" + strconv.Itoa(int(orderID)) + "&session_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:  stripe.String("https://localhost:3000/error?order_id=" + strconv.Itoa(int(orderID)) + "&session_id={CHECKOUT_SESSION_ID}"),
+		SuccessURL: stripe.String("http://localhost:3000/success?order_id=" + strconv.Itoa(int(orderID)) + "&session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:  stripe.String("http://localhost:3000/error?order_id=" + strconv.Itoa(int(orderID)) + "&session_id={CHECKOUT_SESSION_ID}"),
 		Metadata: map[string]string{
 			"order_id": strconv.Itoa(int(orderID)),
 		},

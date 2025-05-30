@@ -11,7 +11,7 @@ func Migrate(database *gorm.DB) {
 		models.Products{}, models.Address{}, models.Brand{}, models.Category{}, models.Order{},
 		models.OrderItem{}, models.Review{}, models.Payment{}, models.ProductImage{}, models.BrandBanners{},
 		models.ProductDetails{}, models.ProductFilter{}, models.LaptopFilter{}, models.CartItem{},
-		models.ReviewImage{})
+		models.ReviewImage{}, models.PushSubscription{})
 	if err != nil {
 		fmt.Println(err)
 		return
