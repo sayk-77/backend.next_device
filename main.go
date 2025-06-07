@@ -85,7 +85,7 @@ func main() {
 	tools.GetImageCategory(app)
 	tools.GetReviewImage(app)
 
-	if err := app.Listen("192.168.0.102:5000"); err != nil {
+	if err := app.Listen("0.0.0.0:5000"); err != nil {
 		log.Fatal("Ошибка при запуске сервера:", err)
 	}
 
